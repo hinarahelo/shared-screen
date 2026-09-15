@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shared Screen — Reuniões e Telas P2P</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+  <div class="landing-container">
+    <div class="hero">
+      <h1>Shared Screen</h1>
+      <p>Compartilhamento de tela ultrarrápido, áudio cristalino e videoconferência privada sem necessidade de cadastro.</p>
+    </div>
+
+    <div class="actions-card">
+      <div class="form-group">
+        <label for="displayName">Seu Nome (Opcional)</label>
+        <input type="text" id="displayName" class="form-control" placeholder="Ex: Lucas Gabriel" maxlength="30">
+      </div>
+
+      <div class="form-group">
+        <label for="roomPassword">Senha da Sala (Opcional)</label>
+        <input type="password" id="roomPassword" class="form-control" placeholder="Definir para salas privadas">
+      </div>
+
+      <button id="btnCreateRoom" class="btn btn-primary">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        Criar Nova Sala
+      </button>
+
+      <div class="divider">OU ENTRAR EM UMA SALA</div>
+
+      <div class="form-group">
+        <input type="text" id="targetRoomId" class="form-control" placeholder="ID da Sala (ex: ABC12345)" style="text-transform: uppercase;">
+      </div>
+
+      <button id="btnJoinRoom" class="btn btn-secondary">
+        Entrar na Reunião
+      </button>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script>
+    const btnCreate = document.getElementById('btnCreateRoom');
+    const btnJoin = document.getElementById('btnJoinRoom');
+
+    function showToast(msg, type = 'info') {
+      const c = document.getElementById('toast-container');
+      const t = document.createElement('div');
+      t.className = `toast toast-${type}`;
+      t.textContent = msg;
+      c.appendChild(t);
+      setTimeout(() => {
+        t.style.animation = 'fadeOut 0.3s forwards';
+        setTimeout(() => t.remove(), 300);
+      }, 3500);
+    }
+
+    btnCreate.addEventListener('click', async () => {
+      const name = document.getElementById('displayName').value.trim();
+      const password = document.getElementById('roomPassword').value;
+
+      try {
+        const res = await fetch('/api/rooms/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (name) localStorage.setItem('user_name', name);
+          if (password) sessionStorage.setItem(`pwd_${data.roomId}`, password);
+          window.location.href = `/room/${data.roomId}`;
+        } else {
+          showToast(data.error || 'Erro ao criar a sala', 'error');
+        }
+      } catch (e) {
+        showToast('Falha na comunicação com o servidor', 'error');
+      }
+    });
+
+    btnJoin.addEventListener('click', () => {
+      const roomId = document.getElementById('targetRoomId').value.trim().toUpperCase();
+      const name = document.getElementById('displayName').value.trim();
+      if (!roomId) return showToast('Digite o ID da sala', 'error');
+      if (name) localStorage.setItem('user_name', name);
+      window.location.href = `/room/${roomId}`;
+    });
+  </script>
+</body>
+</html>

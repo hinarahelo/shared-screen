@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sala — Shared Screen</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/room.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+  <div class="room-container">
+    <!-- Cabeçalho -->
+    <header class="room-header">
+      <div class="header-left">
+        <div class="room-badge">
+          <span>Sala: <b id="lblRoomId">Carregando...</b></span>
+        </div>
+        <button id="btnCopyLink" class="btn btn-secondary" style="padding: 0.4rem 0.75rem; font-size: 0.8rem;">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H14m0 0l3-3m-3 3l3 3"/></svg>
+          Copiar Link
+        </button>
+      </div>
+      <div class="header-right">
+        <div id="connectionStatus" class="room-badge" style="color: var(--primary);">
+          ● HTTPS / Seguro
+        </div>
+        <div class="room-badge">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
+          <span id="participantCounter">1</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Área Principal de Vídeo e Compartilhamento -->
+    <main class="room-workspace">
+      <div id="videoGrid" class="video-grid single">
+        <!-- Vídeo Local -->
+        <div class="video-card" id="card-local">
+          <video id="localVideo" autoplay playsinline muted></video>
+          <div class="video-overlay-info">
+            <span id="localUserName">Você</span>
+          </div>
+          <div class="video-indicators">
+            <span id="localMicIndicator" class="indicator-icon">🎤</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Painel do Chat -->
+      <aside id="chatPanel" class="side-panel hidden">
+        <div class="panel-header">
+          <h3>Chat da Reunião</h3>
+          <button class="btn-close" id="btnCloseChat">✕</button>
+        </div>
+        <div class="panel-content" id="chatContent">
+          <div class="chat-messages" id="chatMessages"></div>
+        </div>
+        <div class="chat-input-wrapper">
+          <input type="text" id="chatInput" class="form-control" placeholder="Digite sua mensagem...">
+          <button id="btnSendChat" class="btn btn-primary" style="width: auto;">Enviar</button>
+        </div>
+      </aside>
+
+      <!-- Painel de Participantes -->
+      <aside id="participantsPanel" class="side-panel hidden">
+        <div class="panel-header">
+          <h3>Participantes</h3>
+          <button class="btn-close" id="btnCloseParticipants">✕</button>
+        </div>
+        <div class="panel-content">
+          <div id="participantsList"></div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Barra Inferior de Controles -->
+    <footer class="room-footer">
+      <button id="btnToggleMic" class="control-btn" title="Microfone">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 003-3V5a3 3 0 10-6 0v6a3 3 0 003 3z"/></svg>
+      </button>
+
+      <button id="btnToggleCam" class="control-btn" title="Câmera">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+      </button>
+
+      <button id="btnScreenShare" class="control-btn" title="Compartilhar Tela">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+      </button>
+
+      <button id="btnRecord" class="control-btn" title="Gravar Reunião">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>
+      </button>
+
+      <button id="btnToggleChat" class="control-btn" title="Chat">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      </button>
+
+      <button id="btnToggleParticipants" class="control-btn" title="Participantes">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      </button>
+
+      <button id="btnSettings" class="control-btn" title="Configurações">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+
+      <button id="btnFullscreen" class="control-btn" title="Tela Cheia">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+      </button>
+
+      <button id="btnLeaveRoom" class="control-btn active-danger" title="Sair da Reunião">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      </button>
+    </footer>
+  </div>
+
+  <!-- Modal de Configurações -->
+  <div id="settingsModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-card-header">
+        <h3>Configurações de Dispositivos</h3>
+        <button id="btnCloseSettings" class="btn-close">✕</button>
+      </div>
+      <div class="modal-card-body">
+        <div class="form-group">
+          <label for="selectMic">Microfone</label>
+          <select id="selectMic" class="form-control"></select>
+        </div>
+        <div class="form-group">
+          <label for="selectCam">Câmera</label>
+          <select id="selectCam" class="form-control"></select>
+        </div>
+        <div class="form-group">
+          <label for="selectResolution">Resolução do Envio</label>
+          <select id="selectResolution" class="form-control">
+            <option value="auto">Automático</option>
+            <option value="360p">360p (Econômico)</option>
+            <option value="720p" selected>720p (HD)</option>
+            <option value="1080p">1080p (Full HD)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Informações de Conexão WebRTC</label>
+          <div style="font-size: 0.85rem; color: var(--text-muted); background: var(--bg-main); padding: 0.75rem; border-radius: 6px;">
+            <div>ICE State: <span id="webrtcIceState">new</span></div>
+            <div>Ping estimado: <span id="webrtcPing">--</span> ms</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/devices.js"></script>
+  <script src="/js/chat.js"></script>
+  <script src="/js/recording.js"></script>
+  <script src="/js/moderator.js"></script>
+  <script src="/js/settings.js"></script>
+  <script src="/js/webrtc.js"></script>
+  <script src="/js/socket.js"></script>
+</body>
+</html>
